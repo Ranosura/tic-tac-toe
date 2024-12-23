@@ -92,14 +92,16 @@ while true; do
 (1) Play
 (0) Exit"
 	read -p "Select menu entry: "
-	if [[ $REPLY == 1 ]]; then
-		game
-		break
-	elif [[ $REPLY == 0 ]]; then
-		echo "The program terminated"
-		break
-	else 
-		echo "There is no such selection."
-		sleep 1
-	fi
+	case "$REPLY" in
+		1)	game
+			break
+			;;
+		0)	echo "The program terminated"
+			break
+			;;
+
+		*)	echo "There is no such selection."
+			sleep 1
+			;;
+	esac
 done
