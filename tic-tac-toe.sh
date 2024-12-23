@@ -40,7 +40,7 @@ game () {
 	while (( $loop < 9 )); do
 		clear -x
 		print_field
-		read -p "Enter the coordinates in form of n,n: "
+		read -p "Enter the coordinates in form of nth row,nth column: "
 		
 		if [[ "$REPLY" =~ ^([1-3],[1-3])$ ]]; then
 			if [[ $REPLY == "1,1" && $A1 == " " ]]; then
