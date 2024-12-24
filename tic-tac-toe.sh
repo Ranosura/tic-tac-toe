@@ -17,7 +17,7 @@ check_state () {
 	[[ ($B1 == $player && $B2 == $player && $B3 == $player) ]] && game_exit
 	[[ ($C1 == $player && $C2 == $player && $C3 == $player) ]] && game_exit
 	[[ ($A1 == $player && $B1 == $player && $C1 == $player) ]] && game_exit
-	[[ ($A2 == $player && $B2 == $player && $C3 == $player) ]] && game_exit
+	[[ ($A2 == $player && $B2 == $player && $C2 == $player) ]] && game_exit
 	[[ ($A3 == $player && $B3 == $player && $C3 == $player) ]] && game_exit
 	[[ ($A1 == $player && $B2 == $player && $C3 == $player) ]] && game_exit
 	[[ ($A3 == $player && $B2 == $player && $C1 == $player) ]] && game_exit
