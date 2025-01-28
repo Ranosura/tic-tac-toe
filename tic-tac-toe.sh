@@ -1,10 +1,18 @@
 #!/bin/bash
 
-# tic-tac-toe: primitive implementation of tic tac toe.
+# tic-tac-toe: implementation of tic tac toe.
 
-A1=" " A2=" " A3=" " B1=" " B2=" " B3=" " C1=" " C2=" " C3=" "
-player="x"
-loop=0
+# For some reason I didn't thought of emulating 2d array using associative array.
+# Credit for inspiration: https://github.com/AshutoshNirkhe/tic-tac-toe/blob/master/tic-tac-toe.sh
+declare -A field
+player="x" loop=0
+
+# Initialize array.
+for ((r=1; r<=3; r++)); do
+	for ((c=1; c<=3; c++)); do 
+		field[$r,$c]=" "
+	done
+done
 
 game_exit () {
 	echo "$player won the game!"
@@ -13,73 +21,58 @@ game_exit () {
 }
 
 check_state () {
-	[[ ($A1 == $player && $A2 == $player && $A3 == $player) ]] && game_exit
-	[[ ($B1 == $player && $B2 == $player && $B3 == $player) ]] && game_exit
-	[[ ($C1 == $player && $C2 == $player && $C3 == $player) ]] && game_exit
-	[[ ($A1 == $player && $B1 == $player && $C1 == $player) ]] && game_exit
-	[[ ($A2 == $player && $B2 == $player && $C2 == $player) ]] && game_exit
-	[[ ($A3 == $player && $B3 == $player && $C3 == $player) ]] && game_exit
-	[[ ($A1 == $player && $B2 == $player && $C3 == $player) ]] && game_exit
-	[[ ($A3 == $player && $B2 == $player && $C1 == $player) ]] && game_exit
+	local winstr="$player$player$player"
+	
+	# Check horizontal lines.
+	for ((r=1; r<=3; r++)); do
+		[[ "$winstr" == "$(for ((c=1; c<=3; c++)); do echo -n "${field[$r,$c]}"; done)" ]] && game_exit
+	done
+	
+	# Check vertical lines.
+	for ((c=1; c<=3; c++)); do
+		[[ "$winstr" == "$(for ((r=1; r<=3; r++)); do echo -n "${field[$r,$c]}"; done)" ]] && game_exit
+	done
+	
+	# At last check diagonal lines.
+	[[ "$winstr" == "${field[1,1]}${field[2,2]}${field[3,3]}" ]] && game_exit
+	[[ "$winstr" == "${field[1,3]}${field[2,2]}${field[3,1]}" ]] && game_exit
 	return 0
 }
 
 print_field () {
-	cat <<- _EOF_
-	 === === ===
-	| $A1 | $A2 | $A3 |
-	 === === ===
-	| $B1 | $B2 | $B3 |
-	 === === ===
-	| $C1 | $C2 | $C3 |
-	 === === ===
-	_EOF_
+	for ((r=1; r<=3; r++)); do
+		printf "	 ===========\n"
+		printf "	| %s | %s | %s |\n" "${field[$r,1]}" "${field[$r,2]}" "${field[$r,3]}"
+	done
+	printf "	 ===========\n"
 }
 
 game () {
 	while (( $loop < 9 )); do
 		clear -x
 		print_field
-		read -p "Enter the coordinates in form of nth row,nth column: "
+		read -p "Position form nth row nth column: " r c
 		
-		if [[ "$REPLY" =~ ^([1-3],[1-3])$ ]]; then
-			if [[ $REPLY == "1,1" && $A1 == " " ]]; then
-				A1=$player
-			elif [[ $REPLY == "1,2" && $A2 == " " ]]; then
-				A2=$player
-			elif [[ $REPLY == "1,3" && $A3 == " "  ]]; then
-				A3=$player
-			elif [[ $REPLY == "2,1" && $B1 == " " ]]; then
-				B1=$player
-			elif [[ $REPLY == "2,2" && $B2 == " " ]]; then
-				B2=$player
-			elif [[ $REPLY == "2,3" && $B3 == " " ]]; then
-				B3=$player
-			elif [[ $REPLY == "3,1" && $C1 == " " ]]; then
-				C1=$player
-			elif [[ $REPLY == "3,2" && $C2 == " " ]]; then
-				C2=$player
-			elif [[ $REPLY == "3,3" && $C3 == " " ]]; then
-				C3=$player
-			else 
-				echo "The coordinate is already occupied."
-				sleep 2
-				continue
-			fi
-			
-			# Checking the state before changing the player parameter is important to not double the amount of conditional expressions.
-			check_state
-			loop=$((loop+1))
-			if [[ $player == "x" ]]; then
-				player="o"
-			else
-				player="x"
-			fi
-
-		else
-			echo "There are no such coordinates."
+		# Validation of input.
+		if [[ ${field[$r,$c]} == " " ]]; then
+			field[$r,$c]=$player
+		elif [[ ! ( -v field[$r,$c] ) ]]; then
+			echo "This position doesn't exist."
 			sleep 2
 			continue
+		else
+			echo "This position is already occupied."
+			sleep 2
+			continue
+		fi
+
+		check_state
+		((loop+1))
+
+		if [[ $player == "x" ]]; then
+			player="o"
+		else
+			player="x"
 		fi
 	done
 	echo "The game ended with tie"
