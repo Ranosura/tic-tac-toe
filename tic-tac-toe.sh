@@ -5,7 +5,7 @@
 # For some reason I didn't thought of emulating 2d array using associative array.
 # Credit for inspiration: https://github.com/AshutoshNirkhe/tic-tac-toe/blob/master/tic-tac-toe.sh
 declare -A field
-player="x" loop=0
+PROGNAME="${0#*/}" player="x" loop=0 log=0
 
 # Initialize array.
 for ((r=1; r<=3; r++)); do
@@ -13,6 +13,18 @@ for ((r=1; r<=3; r++)); do
 		field[$r,$c]=" "
 	done
 done
+
+usage () {
+	cat <<- EOF
+	$PROGNAME - tic-tac-toe implementation in bash
+	
+	$PROGNAME [-h|-l FILE] 
+	    -h display this message
+	    -l log the game in visual form to file FILE
+	
+	EOF
+	exit 0
+}
 
 game_exit () {
 	echo "$player won the game!"
@@ -65,6 +77,8 @@ game () {
 			sleep 2
 			continue
 		fi
+		
+		[[ $log == 1 ]] && print_field | tr -d "\t" >> "$file" 
 
 		check_state
 		((loop+1))
@@ -79,22 +93,36 @@ game () {
 	exit 0
 }
 
-while true; do
-	clear -x
-	echo -e "Tic Tac Toe
-(1) Play
-(0) Exit"
-	read -p "Select menu entry: "
-	case "$REPLY" in
-		1)	game
-			break
-			;;
-		0)	echo "The program terminated"
-			break
-			;;
+log () {
+	file="$1"
+	if [[ -n $file ]]; then
+		if [[ -e "$file" ]]; then
+			read -p "Filename $file already exist. Do you want to rewrite it? [Y|y] [N|n]: "
+			case $REPLY in 
+				Y|y) : > "$file" 
+				     log=1
+				     game 
+				     ;;
+				N|n) exit 0 
+					;;
+				*) echo "No such choice. Abort." && exit 1
+					;;
+			esac
+		else
+			log=1
+			game
+		fi
+	else
+		echo "Filename wasn't set."
+		exit 1
+	fi
+}
 
-		*)	echo "There is no such selection."
-			sleep 1
-			;;
-	esac
-done
+[[ -n "$1" ]] && case "$1" in 
+	-h)	usage ;;
+	-l)	log "$2"
+		game ;;
+	 *)	usage ;;
+esac
+
+game
